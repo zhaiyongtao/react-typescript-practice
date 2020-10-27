@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   cookieSession({
     name: 'session',
-    keys: ['teacher dell'],
+    keys: ['Buzz Lightyear'],
     maxAge: 24 * 60 * 60 * 1000
   })
 );
