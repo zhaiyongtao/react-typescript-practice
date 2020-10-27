@@ -1,62 +1,86 @@
-/**
- * index$ - 登录页面
- * @Author: BuzzLightyear.Z
- * @Email: yongtao.di@hand-china.com
- * @Date: 2020/10/26 6:23 下午
- * @LastEditTime: 2020/10/26 6:23 下午
- * @Copyright: Copyright (c) 2020, Hand
- */
-import React from 'react';
-import { Form, Input, Button } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import './login.css'
+import React, { Component } from 'react';
+import request from '../../request';
+import qs from 'qs';
+import { Form, Icon, Input, Button, message } from 'antd';
+import { Redirect } from 'react-router-dom';
+import { WrappedFormUtils } from 'antd/lib/form/Form';
+import './style.css';
 
-const NormalLoginForm = () => {
-    const [form]  = Form.useForm()
-    const onFinish = async (values :any) => {
-        try {
-            const values = await form.validateFields();
-            console.log('Success:', values);
-        } catch (errorInfo) {
-            console.log('Failed:', errorInfo);
-        }
-        console.log('Received values of form: ', values);
-    };
+interface FormFields {
+  password: string;
+}
 
-    return (
-        <div className="login-page">
-            <Form
-                name="normal_login"
-                className="login-form"
-                form={form}
-                onFinish={onFinish}
-            >
-                <Form.Item
-                    name="username"
-                    rules={[{ required: true, message: 'Please input your Username!' }]}
-                >
-                    <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
-                </Form.Item>
-                <Form.Item
-                    name="password"
-                    rules={[{ required: true, message: 'Please input your Password!' }]}
-                >
-                    <Input
-                        prefix={<LockOutlined className="site-form-item-icon" />}
-                        type="password"
-                        placeholder="Password"
-                    />
-                </Form.Item>
+interface Props {
+  form: WrappedFormUtils<FormFields>;
+}
 
-                <Form.Item>
-                    <Button type="primary" htmlType="submit" className="login-form-button" >
-                        Log in
-                    </Button>
-                </Form.Item>
-            </Form>
-        </div>
+class LoginForm extends Component<Props> {
+  state = {
+    isLogin: false
+  };
 
+  handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        request
+          .post(
+            '/api/login',
+            qs.stringify({
+              password: values.password
+            }),
+            {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }
+          )
+          .then(res => {
+            const data: boolean = res.data;
+            if (data) {
+              this.setState({
+                isLogin: true
+              });
+            } else {
+              message.error('登陆失败');
+            }
+          });
+      }
+    });
+  };
+
+  render() {
+    const { isLogin } = this.state;
+    const { getFieldDecorator } = this.props.form;
+    return isLogin ? (
+      <Redirect to="/" />
+    ) : (
+      <div className="login-page">
+        <Form onSubmit={this.handleSubmit} className="login-form">
+          <Form.Item>
+            {getFieldDecorator('password', {
+              rules: [{ required: true, message: '请输入登陆密码' }]
+            })(
+              <Input
+                prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                type="password"
+                placeholder="Password"
+              />
+            )}
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              登陆
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     );
-};
+  }
+}
 
-export default NormalLoginForm;
+const WrappedLoginForm = Form.create({
+  name: 'login'
+})(LoginForm);
+
+export default WrappedLoginForm;

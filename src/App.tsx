@@ -1,16 +1,17 @@
 import React from 'react';
-import LoginPage from './Pages/Login'
+import { HashRouter, Switch, Route } from 'react-router-dom';
+import LoginPage from './Pages/Login';
+import HomePage from './Pages/Home';
 
-import {HashRouter, Switch, Route, Redirect} from 'react-router-dom';
 export default () => {
-    return (
-        <div>
-            <HashRouter >
-                <Switch>
-                    <Route path="/" render={() => <Redirect to='/login'/>} />
-                    <Route path="/login" component={LoginPage} />
-                </Switch>
-            </HashRouter>
-        </div>
-    );
+  return (
+    <div>
+      <HashRouter>
+        <Switch>
+          <Route path="/" exact component={HomePage} />
+          <Route path="/login" exact component={LoginPage} />
+        </Switch>
+      </HashRouter>
+    </div>
+  );
 };
